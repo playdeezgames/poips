@@ -14,6 +14,21 @@ local opposite = {3,4,1,2}
 local deltaX = {0,1,0,-1}
 local deltaY = {1,0,-1,0}
 
+local saveFile = sys.get_save_file("TGGD_Poips", "options")
+
+local saveOptions = function()
+	local data = {}
+	data.masterGain = sound.get_group_gain("master")
+	sys.save(saveFile, data)
+end
+
+local loadOptions = function()
+	local data = sys.load(saveFile)
+	if data.masterGain ~= nil then
+		sound.set_group_gain("master", data.masterGain)
+	end
+end
+
 local board = {}
 for column=1,BOARD_COLUMNS do
 	board[column]={}
@@ -29,6 +44,7 @@ local moves = 0
 local gameTime = 0
 local inPlay = false
 local titleShowing = true
+local needsReset = true;
 
 function rotateCellCCW(column, row)
 	local boardCell = board[column][row]
@@ -83,6 +99,7 @@ function light(column,row)
 end
 
 function toggleLock(column,row)
+	sound.play("#lock")
 	local boardCell = board[column][row]
 	boardCell.locked = not boardCell.locked
 end
@@ -133,6 +150,8 @@ function resetBoard()
 end
 
 function init(self)
+	loadOptions()
+	sound.play("#music")
 	math.randomseed(os.time())
 	resetBoard()
 	msg.post(".", "acquire_input_focus")
@@ -194,6 +213,39 @@ function hideTitle()
 	titleShowing = false
 end
 
+function toggleMute()
+	sound.set_group_gain("master", 1-sound.get_group_gain("master"))
+	saveOptions()
+end
+
+function doWinCheck()
+	for column=1,BOARD_COLUMNS do
+		for row=1,BOARD_ROWS do
+			local boardCell = board[column][row]
+			if not boardCell.lit then
+				return false
+			end
+		end
+	end
+	return true
+end
+
+function makeMove(moveMaker)
+	unlight(originColumn,originRow)
+	moveMaker(cursorColumn,cursorRow)
+	sound.play("#turn")
+	moves = moves + 1
+	inPlay = true
+	light(originColumn,originRow)
+	if doWinCheck() then
+		msg.post("/fade", "enable")
+		msg.post("/clicktostart", "enable")
+		msg.post("/win", "enable")
+		titleShowing = true
+		inPlay=false		
+	end
+end
+
 function on_input(self, action_id, action)
 	if action_id==nil then
 		cursorColumn=math.floor(action.x/32)+1
@@ -202,21 +254,15 @@ function on_input(self, action_id, action)
 		if titleShowing then
 			hideTitle()
 		else
-			unlight(originColumn,originRow)
-			rotateCellCCW(cursorColumn,cursorRow)
-			moves = moves + 1
-			inPlay = true
-			light(originColumn,originRow)
+			makeMove(rotateCellCCW)
 		end
+	elseif action_id==hash("mute") and action.pressed then
+		toggleMute()
 	elseif action_id==hash("next") and action.pressed then
 		if titleShowing then
 			hideTitle()
-				else
-			unlight(originColumn,originRow)
-			rotateCellCW(cursorColumn,cursorRow)
-			moves = moves + 1
-			inPlay = true
-			light(originColumn,originRow)
+		else
+			makeMove(rotateCellCW)
 		end
 	elseif action_id==hash("green") and action.pressed then
 		if titleShowing then

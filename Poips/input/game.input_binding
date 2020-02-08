@@ -46,6 +46,10 @@ key_trigger {
   input: KEY_SPACE
   action: "start"
 }
+key_trigger {
+  input: KEY_M
+  action: "mute"
+}
 mouse_trigger {
   input: MOUSE_BUTTON_LEFT
   action: "previous"
