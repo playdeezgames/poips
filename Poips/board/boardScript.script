@@ -1,29 +1,228 @@
-function init(self)
-	-- Add initialization code here
-	-- Remove this function if not needed
+local maze = require("Maze.Maze")
+local mazeGenerator = require("Maze.MazeGenerator")
+local mazeDirections = require("Maze.MazeDirections")
+
+local BOARD_COLUMNS = 16
+local BOARD_ROWS = 16
+local DIRECTION_NORTH = 1
+local DIRECTION_EAST = 2
+local DIRECTION_SOUTH = 3
+local DIRECTION_WEST = 4
+
+local directionFlags = {1,2,4,8}
+local opposite = {3,4,1,2}
+local deltaX = {0,1,0,-1}
+local deltaY = {1,0,-1,0}
+
+local board = {}
+for column=1,BOARD_COLUMNS do
+	board[column]={}
+	for row = 1, BOARD_ROWS do
+		board[column][row]={flags={false,false,false,false},lit=false,locked=false}
+	end
+end
+local cursorColumn=1
+local cursorRow=1
+local originColumn=1
+local originRow=1
+local moves = 0
+local gameTime = 0
+local inPlay = false
+local titleShowing = true
+
+function rotateCellCCW(column, row)
+	local boardCell = board[column][row]
+	if not boardCell.locked then
+		local flag = table.remove(boardCell.flags,1)
+		table.insert(boardCell.flags, flag)
+	end
 end
 
-function final(self)
-	-- Add finalization code here
-	-- Remove this function if not needed
+function rotateCellCW(column,row)
+	rotateCellCCW(column,row)
+	rotateCellCCW(column,row)
+	rotateCellCCW(column,row)
+end
+
+function unlight(column,row)
+	local boardCell = board[column][row]
+	if boardCell.lit then
+		boardCell.lit = false
+		for direction = DIRECTION_NORTH, DIRECTION_WEST do
+			if boardCell.flags[direction] then
+				local nextColumn = column + deltaX[direction]
+				local nextRow = row + deltaY[direction]
+				if nextColumn>=1 and nextColumn<=BOARD_COLUMNS and nextRow>=1 and nextRow<=BOARD_ROWS then
+					local nextCell = board[nextColumn][nextRow]
+					if nextCell.flags[opposite[direction]] then
+						unlight(nextColumn, nextRow)
+					end
+				end
+			end
+		end
+	end
+end
+	
+function light(column,row)
+	local boardCell = board[column][row]
+	if not boardCell.lit then
+		boardCell.lit = true
+		for direction = DIRECTION_NORTH, DIRECTION_WEST do
+			if boardCell.flags[direction] then
+				local nextColumn = column + deltaX[direction]
+				local nextRow = row + deltaY[direction]
+				if nextColumn>=1 and nextColumn<=BOARD_COLUMNS and nextRow>=1 and nextRow<=BOARD_ROWS then
+					local nextCell = board[nextColumn][nextRow]
+					if nextCell.flags[opposite[direction]] then
+						light(nextColumn, nextRow)
+					end
+				end
+			end
+		end
+	end
+end
+
+function toggleLock(column,row)
+	local boardCell = board[column][row]
+	boardCell.locked = not boardCell.locked
+end
+
+function scrambleBoard()
+	for column=1,BOARD_COLUMNS do
+		for row=1,BOARD_ROWS do
+			local boardCell = board[column][row]
+			local tally = 0
+			for direction=DIRECTION_NORTH,DIRECTION_WEST do
+				if boardCell.flags[direction] then
+					tally = tally + 1
+				end
+			end
+			if tally==4 or tally==0 then
+				boardCell.locked=true
+			elseif tally == 3 or tally==1 then
+				local turns = math.random(1,3)
+				for turn=1,turns do
+					rotateCellCCW(column, row)
+				end
+			else
+				for direction=DIRECTION_NORTH,DIRECTION_WEST do
+					boardCell.flags[direction] = not boardCell.flags[direction]
+				end
+			end
+		end
+	end
+end
+
+function resetBoard()
+	local m = maze.new(BOARD_COLUMNS, BOARD_ROWS, mazeDirections)
+	mazeGenerator.generate(m, mazeDirections)
+	for column=1,BOARD_COLUMNS do
+		for row=1,BOARD_ROWS do
+			local mazeCell = m:getCell(column,row)
+			local boardCell = board[column][row]
+			for direction=DIRECTION_NORTH,DIRECTION_WEST do
+				boardCell.flags[direction]=mazeCell:hasNeighbor(direction) and mazeCell:getDoor(direction):isOpen()
+			end
+		end
+	end
+	originColumn = math.random(1,BOARD_COLUMNS)
+	originRow = math.random(1,BOARD_ROWS)
+	scrambleBoard()
+	light(originColumn, originRow)
+	moves = 0
+end
+
+function init(self)
+	math.randomseed(os.time())
+	resetBoard()
+	msg.post(".", "acquire_input_focus")
+	msg.post("/win", "disable")
 end
 
 function update(self, dt)
-	-- Add update code here
-	-- Remove this function if not needed
+	if inPlay then
+		gameTime = gameTime + dt
+	end
+	for column=1,BOARD_COLUMNS do
+		for row=1,BOARD_ROWS do
+			local boardCell = board[column][row]
+			local tile = 1
+			for direction = DIRECTION_NORTH, DIRECTION_WEST do
+				if boardCell.flags[direction] then
+					tile = tile + directionFlags[direction]
+				end
+			end
+			if column==cursorColumn and row == cursorRow then
+				tile = tile + 16
+			end
+			tilemap.set_tile("#board","foreground", column, row, tile)
+			tile = 33
+			if column==originColumn and row==originRow then
+				tile = tile + 1
+			elseif boardCell.lit then
+				tile = tile + 2
+			end
+			if boardCell.locked then
+				tile = tile + 3
+			end
+			tilemap.set_tile("#board","background", column, row, tile)
+		end
+	end
+	local temp = moves
+	local column = BOARD_COLUMNS
+	for digits=1,5 do
+		local tile = temp % 10 + 39
+		temp = math.floor(temp/10)
+		tilemap.set_tile("#board","background", column, BOARD_ROWS+1, tile)
+		column = column - 1
+	end
+	temp = math.floor(gameTime)
+	local column = BOARD_COLUMNS
+	for digits=1,5 do
+		local tile = temp % 10 + 39
+		temp = math.floor(temp/10)
+		tilemap.set_tile("#board","background", column, BOARD_ROWS+2, tile)
+		column = column - 1
+	end
 end
 
-function on_message(self, message_id, message, sender)
-	-- Add message-handling code here
-	-- Remove this function if not needed
+function hideTitle()
+	msg.post("/fade", "disable")
+	msg.post("/clicktostart", "disable")
+	msg.post("/title", "disable")
+	msg.post("/win", "disable")
+	titleShowing = false
 end
 
 function on_input(self, action_id, action)
-	-- Add input-handling code here
-	-- Remove this function if not needed
-end
-
-function on_reload(self)
-	-- Add reload-handling code here
-	-- Remove this function if not needed
+	if action_id==nil then
+		cursorColumn=math.floor(action.x/32)+1
+		cursorRow=math.floor(action.y/32)+1
+	elseif action_id==hash("previous") and action.pressed then
+		if titleShowing then
+			hideTitle()
+		else
+			unlight(originColumn,originRow)
+			rotateCellCCW(cursorColumn,cursorRow)
+			moves = moves + 1
+			inPlay = true
+			light(originColumn,originRow)
+		end
+	elseif action_id==hash("next") and action.pressed then
+		if titleShowing then
+			hideTitle()
+				else
+			unlight(originColumn,originRow)
+			rotateCellCW(cursorColumn,cursorRow)
+			moves = moves + 1
+			inPlay = true
+			light(originColumn,originRow)
+		end
+	elseif action_id==hash("green") and action.pressed then
+		if titleShowing then
+			hideTitle()
+		else
+			toggleLock(cursorColumn, cursorRow)
+		end
+	end
 end
