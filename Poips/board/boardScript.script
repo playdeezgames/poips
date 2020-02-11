@@ -2,6 +2,7 @@ local maze = require("Maze.Maze")
 local mazeGenerator = require("Maze.MazeGenerator")
 local mazeDirections = require("Maze.MazeDirections")
 local options = require("utilities.options")
+local statistics = require("utilities.statistics")
 
 local BOARD_COLUMNS = 16
 local BOARD_ROWS = 16
@@ -240,6 +241,7 @@ function makeMove(moveMaker)
 		inPlay = true
 		light(originColumn,originRow)
 		if doWinCheck() then
+			statistics.addStatistics(moves,gameTime)
 			msg.post("/title/buttons", "enable")
 			msg.post("/title/fade", "enable")
 			msg.post("/title/clicktostart", "enable")
