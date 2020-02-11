@@ -1,6 +1,6 @@
 components {
-  id: "win"
-  component: "/main/win.sprite"
+  id: "title"
+  component: "/title/poips.sprite"
   position {
     x: 0.0
     y: 0.0

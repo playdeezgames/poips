@@ -1,6 +1,6 @@
 components {
-  id: "title"
-  component: "/main/title.sprite"
+  id: "clicktostart"
+  component: "/title/clicktostart.sprite"
   position {
     x: 0.0
     y: 0.0

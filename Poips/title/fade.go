@@ -1,6 +1,6 @@
 components {
   id: "fade"
-  component: "/main/fade.sprite"
+  component: "/title/fade.sprite"
   position {
     x: 0.0
     y: 0.0
