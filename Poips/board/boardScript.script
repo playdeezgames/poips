@@ -1,6 +1,7 @@
 local maze = require("Maze.Maze")
 local mazeGenerator = require("Maze.MazeGenerator")
 local mazeDirections = require("Maze.MazeDirections")
+local options = require("utilities.options")
 
 local BOARD_COLUMNS = 16
 local BOARD_ROWS = 16
@@ -13,21 +14,6 @@ local directionFlags = {1,2,4,8}
 local opposite = {3,4,1,2}
 local deltaX = {0,1,0,-1}
 local deltaY = {1,0,-1,0}
-
-local saveFile = sys.get_save_file("TGGD_Poips", "options")
-
-local saveOptions = function()
-	local data = {}
-	data.masterGain = sound.get_group_gain("master")
-	sys.save(saveFile, data)
-end
-
-local loadOptions = function()
-	local data = sys.load(saveFile)
-	if data.masterGain ~= nil then
-		sound.set_group_gain("master", data.masterGain)
-	end
-end
 
 local board = {}
 for column=1,BOARD_COLUMNS do
@@ -149,8 +135,10 @@ function resetBoard()
 	moves = 0
 end
 
+local frameTime = os.clock()
+
 function init(self)
-	loadOptions()
+	options.loadOptions()
 	sound.play("#music")
 	math.randomseed(os.time())
 	resetBoard()
@@ -159,8 +147,11 @@ function init(self)
 end
 
 function update(self, dt)
+	local currentTime = os.clock()
+	local deltaTime = currentTime - frameTime
+	frameTime = currentTime
 	if inPlay then
-		gameTime = gameTime + dt
+		gameTime = gameTime + deltaTime
 	end
 	for column=1,BOARD_COLUMNS do
 		for row=1,BOARD_ROWS do
@@ -215,7 +206,7 @@ end
 
 function toggleMute()
 	sound.set_group_gain("master", 1-sound.get_group_gain("master"))
-	saveOptions()
+	options.saveOptions()
 end
 
 function doWinCheck()
