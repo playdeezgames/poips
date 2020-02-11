@@ -125,6 +125,8 @@ function resetBoard()
 			local boardCell = board[column][row]
 			for direction=DIRECTION_NORTH,DIRECTION_WEST do
 				boardCell.flags[direction]=mazeCell:hasNeighbor(direction) and mazeCell:getDoor(direction):isOpen()
+				boardCell.lit = false
+				boardCell.locked = false
 			end
 		end
 	end
@@ -133,6 +135,7 @@ function resetBoard()
 	scrambleBoard()
 	light(originColumn, originRow)
 	moves = 0
+	gameTime = 0
 end
 
 local frameTime = os.clock()
@@ -202,6 +205,7 @@ function hideTitle()
 	msg.post("/title", "disable")
 	msg.post("/win", "disable")
 	titleShowing = false
+	resetBoard()
 end
 
 function toggleMute()
@@ -222,18 +226,20 @@ function doWinCheck()
 end
 
 function makeMove(moveMaker)
-	unlight(originColumn,originRow)
-	moveMaker(cursorColumn,cursorRow)
-	sound.play("#turn")
-	moves = moves + 1
-	inPlay = true
-	light(originColumn,originRow)
-	if doWinCheck() then
-		msg.post("/fade", "enable")
-		msg.post("/clicktostart", "enable")
-		msg.post("/win", "enable")
-		titleShowing = true
-		inPlay=false		
+	if not board[cursorColumn][cursorRow].locked then
+		unlight(originColumn,originRow)
+		moveMaker(cursorColumn,cursorRow)
+		sound.play("#turn")
+		moves = moves + 1
+		inPlay = true
+		light(originColumn,originRow)
+		if doWinCheck() then
+			msg.post("/fade", "enable")
+			msg.post("/clicktostart", "enable")
+			msg.post("/win", "enable")
+			titleShowing = true
+			inPlay=false		
+		end
 	end
 end
 
