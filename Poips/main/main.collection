@@ -19,13 +19,13 @@ instances {
     z: 1.0
   }
 }
-collection_instances {
-  id: "title"
-  collection: "/title/title.collection"
+instances {
+  id: "titlebuttons"
+  prototype: "/titlebuttons/titlebuttons.go"
   position {
-    x: 256.0
-    y: 288.0
-    z: 0.1
+    x: 0.0
+    y: 0.0
+    z: 0.0
   }
   rotation {
     x: 0.0

@@ -143,16 +143,11 @@ local frameTime = os.clock()
 
 function init(self)
 	options.loadOptions()
-	if sound.get_group_gain("master")>0 then
-		sprite.play_flipbook("/title/buttons#settingsbutton", "SpeakerOn")
-	else
-		sprite.play_flipbook("/title/buttons#settingsbutton", "SpeakerOn")
-	end
 	sound.play("#music")
 	math.randomseed(os.time())
 	resetBoard()
-	msg.post(".", "acquire_input_focus")
-	msg.post("/title/win", "disable")
+	--msg.post(".", "acquire_input_focus")
+	--msg.post("/title/win", "disable")
 end
 
 function update(self, dt)
@@ -206,11 +201,6 @@ function update(self, dt)
 end
 
 function hideTitle()
-	msg.post("/title/fade", "disable")
-	msg.post("/title/clicktostart", "disable")
-	msg.post("/title/poips", "disable")
-	msg.post("/title/win", "disable")
-	msg.post("/title/buttons", "disable")
 	titleShowing = false
 	resetBoard()
 end
@@ -242,55 +232,20 @@ function makeMove(moveMaker)
 		light(originColumn,originRow)
 		if doWinCheck() then
 			statistics.addStatistics(moves,gameTime)
-			msg.post("/title/buttons", "enable")
-			msg.post("/title/fade", "enable")
-			msg.post("/title/clicktostart", "enable")
-			msg.post("/title/win", "enable")
+			msg.post("/titlebuttons", "enable")
+			msg.post(".","release_input_focus")
+			msg.post("/titlebuttons", "acquire_input_focus")
 			titleShowing = true
 			inPlay=false		
 		end
 	end
 end
 
-function handleTitleClick()
-	if cursorColumn>=1 and cursorColumn<=2 and cursorRow>=1 and cursorRow<=2 then
-	elseif cursorColumn>=BOARD_COLUMNS-1 and cursorColumn<=BOARD_COLUMNS and cursorRow>=1 and cursorRow<=2 then
-	elseif cursorColumn>=1 and cursorColumn<=2 and cursorRow>=BOARD_ROWS-1 and cursorRow<=BOARD_ROWS then
+function on_message(self, message_id, message, sender)
+	if message_id == hash("toggleMute") then
 		toggleMute()
-	elseif cursorColumn>=BOARD_COLUMNS-1 and cursorColumn<=BOARD_COLUMNS and cursorRow>=BOARD_ROWS-1 and cursorRow<=BOARD_ROWS then
-	else
-		hideTitle()
-	end
-end
-
-function handleTitleHover()
-	if cursorColumn>=1 and cursorColumn<=2 and cursorRow>=1 and cursorRow<=2 then
-		sprite.play_flipbook("/title/buttons#helpbutton", "HelpHover")
-	else
-		sprite.play_flipbook("/title/buttons#helpbutton", "Help")
-	end
-	if cursorColumn>=BOARD_COLUMNS-1 and cursorColumn<=BOARD_COLUMNS and cursorRow>=1 and cursorRow<=2 then
-		sprite.play_flipbook("/title/buttons#infobutton", "InfoHover")
-	else
-		sprite.play_flipbook("/title/buttons#infobutton", "Info")
-	end
-	if cursorColumn>=1 and cursorColumn<=2 and cursorRow>=BOARD_ROWS-1 and cursorRow<=BOARD_ROWS then
-		if sound.get_group_gain("master")>0 then
-			sprite.play_flipbook("/title/buttons#settingsbutton", "SpeakerOffHover")
-		else
-			sprite.play_flipbook("/title/buttons#settingsbutton", "SpeakerOnHover")
-		end
-	else
-		if sound.get_group_gain("master")>0 then
-			sprite.play_flipbook("/title/buttons#settingsbutton", "SpeakerOff")
-		else
-			sprite.play_flipbook("/title/buttons#settingsbutton", "SpeakerOn")
-		end
-	end
-	if cursorColumn>=BOARD_COLUMNS-1 and cursorColumn<=BOARD_COLUMNS and cursorRow>=BOARD_ROWS-1 and cursorRow<=BOARD_ROWS then
-		sprite.play_flipbook("/title/buttons#statsbutton", "StatsHover")
-	else
-		sprite.play_flipbook("/title/buttons#statsbutton", "Stats")
+	elseif message_id == hash("resetBoard") then
+		resetBoard()
 	end
 end
 
@@ -298,26 +253,13 @@ function on_input(self, action_id, action)
 	if action_id==nil then
 		cursorColumn=math.floor(action.x/32)+1
 		cursorRow=math.floor(action.y/32)+1
-		handleTitleHover()
 	elseif action_id==hash("previous") and action.pressed then
-		if titleShowing then
-			handleTitleClick()
-		else
-			makeMove(rotateCellCCW)
-		end
+		makeMove(rotateCellCCW)
 	elseif action_id==hash("mute") and action.pressed then
 		toggleMute()
 	elseif action_id==hash("next") and action.pressed then
-		if titleShowing then
-			handleTitleClick()
-		else
-			makeMove(rotateCellCW)
-		end
+		makeMove(rotateCellCW)
 	elseif action_id==hash("green") and action.pressed then
-		if titleShowing then
-			handleTitleClick()
-		else
-			toggleLock(cursorColumn, cursorRow)
-		end
+		toggleLock(cursorColumn, cursorRow)
 	end
 end
