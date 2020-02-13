@@ -109,39 +109,6 @@ animations {
   flip_vertical: 0
 }
 animations {
-  id: "AboutScreen"
-  images {
-    image: "/assets/images/ui/about.png"
-    sprite_trim_mode: SPRITE_TRIM_MODE_OFF
-  }
-  playback: PLAYBACK_LOOP_FORWARD
-  fps: 60
-  flip_horizontal: 0
-  flip_vertical: 0
-}
-animations {
-  id: "HelpScreen"
-  images {
-    image: "/assets/images/ui/help.png"
-    sprite_trim_mode: SPRITE_TRIM_MODE_OFF
-  }
-  playback: PLAYBACK_LOOP_FORWARD
-  fps: 60
-  flip_horizontal: 0
-  flip_vertical: 0
-}
-animations {
-  id: "StatsScreen"
-  images {
-    image: "/assets/images/ui/stats.png"
-    sprite_trim_mode: SPRITE_TRIM_MODE_OFF
-  }
-  playback: PLAYBACK_LOOP_FORWARD
-  fps: 60
-  flip_horizontal: 0
-  flip_vertical: 0
-}
-animations {
   id: "SpeakerOff"
   images {
     image: "/assets/images/buttons/speaker-off_nohover.png"
@@ -178,6 +145,28 @@ animations {
   id: "SpeakerOnHover"
   images {
     image: "/assets/images/buttons/speaker_hover.png"
+    sprite_trim_mode: SPRITE_TRIM_MODE_OFF
+  }
+  playback: PLAYBACK_LOOP_FORWARD
+  fps: 60
+  flip_horizontal: 0
+  flip_vertical: 0
+}
+animations {
+  id: "Cancel"
+  images {
+    image: "/assets/images/buttons/cancel_nohover.png"
+    sprite_trim_mode: SPRITE_TRIM_MODE_OFF
+  }
+  playback: PLAYBACK_LOOP_FORWARD
+  fps: 60
+  flip_horizontal: 0
+  flip_vertical: 0
+}
+animations {
+  id: "CancelHover"
+  images {
+    image: "/assets/images/buttons/cancel_hover.png"
     sprite_trim_mode: SPRITE_TRIM_MODE_OFF
   }
   playback: PLAYBACK_LOOP_FORWARD
