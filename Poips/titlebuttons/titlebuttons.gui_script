@@ -63,6 +63,7 @@ function on_input(self, action_id, action)
 		elseif hoverButton==INFO_BUTTON then
 			sys.open_url("https://grumpygamedev.gitlab.io/getoffmylawn/about/poips.html")
 		elseif hoverButton==STATS_BUTTON then
+			--TODO: open stats screen
 		elseif hoverButton==MUTE_BUTTON then
 			msg.post("/board", "toggleMute")
 		else
