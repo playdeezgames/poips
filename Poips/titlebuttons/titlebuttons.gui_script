@@ -59,7 +59,9 @@ function on_input(self, action_id, action)
 		updateHoverButton(action.x,action.y)
 	elseif action_id==hash("previous") and action.pressed then
 		if hoverButton==HELP_BUTTON then
+			sys.open_url("https://grumpygamedev.gitlab.io/getoffmylawn/help/poips.html")
 		elseif hoverButton==INFO_BUTTON then
+			sys.open_url("https://grumpygamedev.gitlab.io/getoffmylawn/about/poips.html")
 		elseif hoverButton==STATS_BUTTON then
 		elseif hoverButton==MUTE_BUTTON then
 			msg.post("/board", "toggleMute")
