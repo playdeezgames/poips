@@ -236,7 +236,8 @@ function makeMove(moveMaker)
 			msg.post(".","release_input_focus")
 			msg.post("/titlebuttons", "acquire_input_focus")
 			titleShowing = true
-			inPlay=false		
+			inPlay=false
+			statistics.addStatistics(moves, gameTime)
 		end
 	end
 end

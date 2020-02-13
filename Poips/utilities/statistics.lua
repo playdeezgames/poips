@@ -5,7 +5,7 @@ data.totalTime = 0
 
 local module = {}
 
-module.addStatistics = function(moves,gameTime)
+function module.addStatistics(moves,gameTime)
 	data.gamesPlayed = data.gamesPlayed + 1
 	data.totalMoves = data.totalMoves + moves
 	data.totalTime = data.totalTime + gameTime
@@ -19,6 +19,46 @@ module.addStatistics = function(moves,gameTime)
 	if gameTime < data.bestTime then
 		data.bestTime = gameTime
 	end
+end
+
+function module.getGamesPlayed()
+	return data.gamesPlayed
+end
+
+function module.setGamesPlayed(value)
+	data.gamesPlayed = value
+end
+
+function module.getTotalMoves()
+	return data.totalMoves
+end
+
+function module.setTotalMoves(value)
+	data.totalMoves = value
+end
+
+function module.getTotalTime()
+	return data.totalTime
+end
+
+function module.setTotalTime(value)
+	data.totalTime = value
+end
+
+function module.getBestTime()
+	return data.bestTime
+end
+
+function module.setBestTime(value)
+	data.bestTime = value
+end
+
+function module.getBestMoves()
+	return data.bestMoves
+end
+
+function module.setBestMoves(value)
+	data.bestMoves = value
 end
 
 return module
